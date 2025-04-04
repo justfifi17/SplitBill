@@ -9,15 +9,14 @@ const router = express.Router();
  *   get:
  *     summary: Test Firebase authentication
  *     tags: [AuthTest]
- *     security:
- *       - firebaseAuth: []
+ *   
  *     responses:
  *       200:
  *         description: Authenticated user data
  *       401:
  *         description: Unauthorized
  */
-router.get('/', authenticate, authTest);
+router.get('/', authTest);
 
 // Test if Firebase token is working
 router.get('/protected', verifyFirebaseToken, (req, res) => {

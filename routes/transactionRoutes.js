@@ -11,8 +11,7 @@ const router = express.Router();
  *   post:
  *     summary: Add a new transaction
  *     tags: [Transactions]
- *     security:
- *       - firebaseAuth: []
+ *  
  *     requestBody:
  *       required: true
  *       content:
@@ -36,7 +35,7 @@ const router = express.Router();
  *       201:
  *         description: Transaction created
  */
-router.post('/add', authenticate, addTransaction);
+router.post('/add', addTransaction);
 
 /**
  * @swagger
@@ -44,8 +43,7 @@ router.post('/add', authenticate, addTransaction);
  *   post:
  *     summary: Resolve leftover cents
  *     tags: [Transactions]
- *     security:
- *       - firebaseAuth: []
+ *   
  *     parameters:
  *       - name: transactionId
  *         in: path
@@ -65,7 +63,7 @@ router.post('/add', authenticate, addTransaction);
  *       200:
  *         description: Resolution successful
  */
-router.post('/resolve-cent/:transactionId', authenticate, resolveCent);
+router.post('/resolve-cent/:transactionId', resolveCent);
 
 // Add an expense to a group
 router.post('/add', verifyFirebaseToken, async (req, res) => {

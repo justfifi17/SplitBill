@@ -11,8 +11,6 @@ const router = express.Router();
  *   post:
  *     summary: Upload a receipt image
  *     tags: [Receipts]
- *     security:
- *       - firebaseAuth: []
  *     requestBody:
  *       content:
  *         multipart/form-data:
@@ -26,7 +24,7 @@ const router = express.Router();
  *       200:
  *         description: Receipt uploaded
  */
-router.post('/upload', authenticate, uploadReceipt);
+router.post('/upload', uploadReceipt);
 
 /**
  * @swagger
@@ -34,13 +32,12 @@ router.post('/upload', authenticate, uploadReceipt);
  *   get:
  *     summary: Get user's uploaded receipts
  *     tags: [Receipts]
- *     security:
- *       - firebaseAuth: []
+ *     
  *     responses:
  *       200:
  *         description: List of receipts
  */
-router.get('/', authenticate, getReceipts);
+router.get('/', getReceipts);
 
 // Memory storage for small files like receipts
 const upload = multer({ storage: multer.memoryStorage() });

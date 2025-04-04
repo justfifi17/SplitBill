@@ -10,8 +10,6 @@ const router = express.Router();
  *   post:
  *     summary: Create a new group
  *     tags: [Groups]
- *     security:
- *       - firebaseAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -26,7 +24,7 @@ const router = express.Router();
  *       201:
  *         description: Group created
  */
-router.post('/create', authenticate, createGroup);
+router.post('/create', createGroup);
 
 /**
  * @swagger
@@ -34,13 +32,12 @@ router.post('/create', authenticate, createGroup);
  *   get:
  *     summary: Get groups the user belongs to
  *     tags: [Groups]
- *     security:
- *       - firebaseAuth: []
+ *     
  *     responses:
  *       200:
  *         description: List of groups
  */
-router.get('/my-groups', authenticate, getMyGroups);
+router.get('/my-groups', getMyGroups);
 
 /**
  * @swagger
@@ -48,8 +45,7 @@ router.get('/my-groups', authenticate, getMyGroups);
  *   post:
  *     summary: Join an existing group
  *     tags: [Groups]
- *     security:
- *       - firebaseAuth: []
+ *    
  *     parameters:
  *       - name: groupId
  *         in: path
@@ -60,7 +56,7 @@ router.get('/my-groups', authenticate, getMyGroups);
  *       200:
  *         description: Joined successfully
  */
-router.post('/join/:groupId', authenticate, joinGroup);
+router.post('/join/:groupId', joinGroup);
 
 
 //Create a new group
