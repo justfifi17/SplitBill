@@ -11,7 +11,7 @@ const options = {
     },
     servers: [
       {
-        url: 'https://splitbill-api.onrender.com/api', // Update this
+        url: 'https://splitbill-api.onrender.com', // Update this
       },
     ],
     tags: [

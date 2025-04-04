@@ -7,7 +7,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 const express = require('express');
 const app = express();
-const setupSwagger = require('./swagger'); // make sure the path is correct
+const setupSwagger = require('./config/swagger'); // make sure the path is correct
 
 
 dotenv.config();       // Load .env file
