@@ -1,0 +1,178 @@
+const express = require('express');
+const Transaction = require('../models/Transaction');
+const Group = require('../models/Group');
+const verifyFirebaseToken = require('../middleware/authMiddleware');
+
+const router = express.Router();
+
+/**
+ * @swagger
+ * /transactions/add:
+ *   post:
+ *     summary: Add a new transaction
+ *     tags: [Transactions]
+ *     security:
+ *       - firebaseAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               groupId:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *               amount:
+ *                 type: number
+ *               payer:
+ *                 type: string
+ *               participants:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       201:
+ *         description: Transaction created
+ */
+router.post('/add', authenticate, addTransaction);
+
+/**
+ * @swagger
+ * /transactions/resolve-cent/{transactionId}:
+ *   post:
+ *     summary: Resolve leftover cents
+ *     tags: [Transactions]
+ *     security:
+ *       - firebaseAuth: []
+ *     parameters:
+ *       - name: transactionId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               resolutionMethod:
+ *                 type: string
+ *                 enum: [donate, random]
+ *     responses:
+ *       200:
+ *         description: Resolution successful
+ */
+router.post('/resolve-cent/:transactionId', authenticate, resolveCent);
+
+// Add an expense to a group
+router.post('/add', verifyFirebaseToken, async (req, res) => {
+    const userId = req.user.uid;
+    const { groupId, totalAmount, description } = req.body;
+  
+    if (!groupId || !totalAmount || !description) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+  
+    try {
+      const group = await Group.findById(groupId);
+      if (!group) {
+        return res.status(404).json({ message: 'Group not found' });
+      }
+  
+      if (!group.members.includes(userId)) {
+        return res.status(403).json({ message: 'You are not a member of this group' });
+      }
+  
+      const members = group.members;
+      const numMembers = members.length;
+      const perPersonRaw = totalAmount / numMembers;
+      const perPersonRounded = Math.floor(perPersonRaw * 100) / 100;
+  
+      const totalSplit = perPersonRounded * numMembers;
+      const remainingCent = Math.round((totalAmount - totalSplit) * 100) / 100;
+  
+      const splitAmong = members.map(uid => ({
+        user: uid,
+        amount: perPersonRounded
+      }));
+  
+      const transaction = new Transaction({
+        groupId,
+        paidBy: userId,
+        totalAmount,
+        description,
+        splitAmong,
+        remainingCent,
+        resolved: false,
+        resolutionType: null
+      });
+  
+      await transaction.save();
+  
+      res.status(201).json({
+        message: 'Expense added successfully with split details',
+        transaction,
+      });
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to add expense', error: err.message });
+    }
+  });
+
+  const CharityPool = require('../models/CharityPool');
+
+router.post('/resolve-cent/:transactionId', verifyFirebaseToken, async (req, res) => {
+  const userId = req.user.uid;
+  const { decision } = req.body; // 'donate' or 'game'
+  const transactionId = req.params.transactionId;
+
+  if (!['donate', 'game'].includes(decision)) {
+    return res.status(400).json({ message: "Decision must be either 'donate' or 'game'" });
+  }
+
+  try {
+    const transaction = await Transaction.findById(transactionId);
+    if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
+
+    if (transaction.resolved) {
+      return res.status(400).json({ message: 'Remaining cent already resolved' });
+    }
+
+    let result = {};
+
+    if (decision === 'donate') {
+      let pool = await CharityPool.findOne();
+      if (!pool) pool = new CharityPool();
+
+      pool.totalCents += Math.round(transaction.remainingCent * 100);
+      await pool.save();
+
+      transaction.resolutionType = 'donate';
+      transaction.resolved = true;
+      await transaction.save();
+
+      result = { donated: transaction.remainingCent, newCharityTotal: pool.totalCents / 100 };
+    } else if (decision === 'game') {
+      // Pick random member to pay the cent
+      const unlucky = transaction.splitAmong[Math.floor(Math.random() * transaction.splitAmong.length)];
+      result = { unluckyUser: unlucky.user, paysExtra: transaction.remainingCent };
+
+      transaction.resolutionType = 'game';
+      transaction.resolved = true;
+      await transaction.save();
+    }
+
+    res.status(200).json({
+      message: `Remaining cent resolved by ${decision}`,
+      resolution: result,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error resolving cent', error: err.message });
+  }
+});
+
+  
+
+module.exports = router;

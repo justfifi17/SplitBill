@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firebase Login</title>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.2/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <h2>Test Firebase Login</h2>
+  <input type="email" id="email" placeholder="Email"><br>
+  <input type="password" id="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCHaFVOA7NENAS9KQtNSeMHYuxSmq0g-YM",
+        authDomain: "splitbill-8caa8.firebaseapp.com",
+        projectId: "splitbill-8caa8",
+        storageBucket: "splitbill-8caa8.firebasestorage.app",
+        messagingSenderId: "541093318762",
+        appId: "1:541093318762:web:21dad9f93127ad636a7a13",
+        measurementId: "G-7268ZC55FT"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    async function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const token = await userCredential.user.getIdToken();
+        console.log("Firebase Token:", token);
+        alert("Token copied to console! Open browser DevTools > Console.");
+      } catch (error) {
+        alert("Login failed: " + error.message);
+      }
+    }
+  </script>
+</body>
+</html>
