@@ -1,8 +1,42 @@
 const express = require('express');
 const router = express.Router();
 const admin = require('firebase-admin');
-const User = require('../models/User'); // MongoDB user model (you’ll create this)
+const User = require('../models/User'); // MongoDB user model
 
+/**
+ * @swagger
+ * /auth/signup:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - name
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 example: securePass123
+ *               name:
+ *                 type: string
+ *                 example: Fithi
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *       400:
+ *         description: Missing input
+ *       500:
+ *         description: Server error
+ */
 router.post('/signup', async (req, res) => {
   const { email, password, name } = req.body;
 
@@ -18,7 +52,7 @@ router.post('/signup', async (req, res) => {
       displayName: name,
     });
 
-    // 2. Save to MongoDB for internal use
+    // 2. Save to MongoDB (optional but useful)
     const newUser = new User({
       _id: userRecord.uid,
       email: userRecord.email,
