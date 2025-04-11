@@ -1,42 +1,35 @@
 const express = require('express');
 const app = express();
-const setupSwagger = require('./config/swagger');
 const dotenv = require('dotenv');
-const connectDB = require('./config/db');
 const cors = require('cors');
+
+const connectDB = require('./config/db');
+const setupSwagger = require('./config/swagger');
+
 const transactionRoutes = require('./routes/transactionRoutes');
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./config/swagger');
+const groupRoutes = require('./routes/groupRoutes');
+const receiptRoutes = require('./routes/receiptRoutes');
+const authTestRoutes = require('./routes/authTestRoutes');
 
-
-dotenv.config();       // Load .env file
+dotenv.config();       // Load .env variables
 connectDB();           // Connect to MongoDB
 
 app.use(cors());
 app.use(express.json());
+
+// ✅ Swagger UI
 setupSwagger(app);
 
-// Base route
+// ✅ Base welcome route
 app.get('/', (req, res) => {
   res.send('Welcome! SplitBill API is running...');
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
-const authTestRoutes = require('./routes/authTestRoutes');
+// ✅ All API Routes
+app.use('/api/groups', groupRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/receipts', receiptRoutes);
 app.use('/api/test', authTestRoutes);
 
-const groupRoutes = require('./routes/groupRoutes');
-app.use('/api/groups', groupRoutes);
-
-app.use('/api/transactions', transactionRoutes);
-
-const receiptRoutes = require('./routes/receiptRoutes');
-
-app.use('/api/receipts', receiptRoutes);
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-
-
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
