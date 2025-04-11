@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const admin = require('firebase-admin');
+const admin = require('../config/firebaseAdmin');
 const User = require('../models/User'); // MongoDB user model
 
 /**
