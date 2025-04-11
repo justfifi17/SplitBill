@@ -28,6 +28,7 @@ app.get('/', (req, res) => {
 });
 
 // ✅ All API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/receipts', receiptRoutes);
