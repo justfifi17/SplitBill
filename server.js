@@ -10,6 +10,8 @@ const transactionRoutes = require('./routes/transactionRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const receiptRoutes = require('./routes/receiptRoutes');
 const authTestRoutes = require('./routes/authTestRoutes');
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
 
 dotenv.config();       // Load .env variables
 connectDB();           // Connect to MongoDB
