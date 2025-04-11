@@ -1,18 +1,22 @@
-// const admin = require('../config/firebaseAdmin');
+// middleware/authMiddleware.js
 
-// const verifyFirebaseToken = async (req, res, next) => {
-//   const token = req.headers.authorization?.split('Bearer ')[1];
+const admin = require('firebase-admin');
 
-//   if (!token) return res.status(401).json({ message: 'No token provided' });
+const verifyFirebaseToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
 
-//   try {
-//     const decodedToken = await admin.auth().verifyIdToken(token);
-//     req.user = decodedToken;
-//     next(); // Proceed to actual route handler
-//   } catch (error) {
-//     console.error('Token verification failed:', error.message);
-//     return res.status(401).json({ message: 'Invalid or expired token' });
-//   }
-// };
+  const token = authHeader.split(' ')[1];
 
-// module.exports = verifyFirebaseToken;
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = decodedToken;
+    next();
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid or expired token' });
+  }
+};
+
+module.exports = verifyFirebaseToken; // Export the function directly
