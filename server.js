@@ -1,4 +1,6 @@
 const express = require('express');
+const app = express();
+const setupSwagger = require('./config/swagger');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const cors = require('cors');
@@ -6,8 +8,6 @@ const transactionRoutes = require('./routes/transactionRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 const express = require('express');
-const app = express();
-const setupSwagger = require('./config/swagger'); // make sure the path is correct
 
 
 dotenv.config();       // Load .env file
@@ -19,10 +19,10 @@ setupSwagger(app);
 
 // Base route
 app.get('/', (req, res) => {
-  res.send('✅ SplitBill API is running...');
+  res.send('Welcome! SplitBill API is running...');
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
 const authTestRoutes = require('./routes/authTestRoutes');

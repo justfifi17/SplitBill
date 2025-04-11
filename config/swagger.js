@@ -1,3 +1,4 @@
+// swagger.js
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
@@ -11,31 +12,11 @@ const options = {
     },
     servers: [
       {
-        url: 'https://splitbill-api.onrender.com', // Update this
-      },
-    ],
-    tags: [
-      { name: 'Groups', description: 'Group management' },
-      { name: 'Transactions', description: 'Expense and settlement' },
-      { name: 'Receipts', description: 'Receipt uploads and views' },
-      { name: 'AuthTest', description: 'Authentication test endpoint' },
-    ],
-    components: {
-      securitySchemes: {
-        firebaseAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
-    },
-    security: [
-      {
-        firebaseAuth: [],
+        url: 'https://splitbill-api.onrender.com', 
       },
     ],
   },
-  apis: ['./routes/*.js'], // Adjust if you use src/
+  apis: ['./routes/*.js'], 
 };
 
 const swaggerSpec = swaggerJSDoc(options);
