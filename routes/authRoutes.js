@@ -5,7 +5,7 @@ const User = require('../models/User'); // MongoDB user model
 
 /**
  * @swagger
- * /auth/signup:
+ * /api/auth/signup:
  *   post:
  *     summary: Register a new user
  *     tags: [Auth]
