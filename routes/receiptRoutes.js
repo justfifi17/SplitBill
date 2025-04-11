@@ -1,9 +1,11 @@
+// KEEP these
 const express = require('express');
 const multer = require('multer');
 const { getStorage } = require('firebase-admin/storage');
 const verifyFirebaseToken = require('../middleware/authMiddleware');
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * @swagger
@@ -24,7 +26,7 @@ const router = express.Router();
  *       200:
  *         description: Receipt uploaded
  */
-router.post('/upload', uploadReceipt);
+// Already defined correctly below — no need to redeclare `uploadReceipt`
 
 /**
  * @swagger
@@ -32,17 +34,16 @@ router.post('/upload', uploadReceipt);
  *   get:
  *     summary: Get user's uploaded receipts
  *     tags: [Receipts]
- *     
  *     responses:
  *       200:
  *         description: List of receipts
  */
-router.get('/', getReceipts);
+router.get('/', (req, res) => {
+  // Placeholder — you can implement this later
+  res.json({ message: 'Get receipts route is live!' });
+});
 
-// Memory storage for small files like receipts
-const upload = multer({ storage: multer.memoryStorage() });
-
-// 🔐 Upload a receipt to Firebase Storage
+// ✅ Working Firebase Storage Upload Handler
 router.post('/upload', verifyFirebaseToken, upload.single('receipt'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
@@ -56,7 +57,7 @@ router.post('/upload', verifyFirebaseToken, upload.single('receipt'), async (req
     const blobStream = file.createWriteStream({
       metadata: {
         contentType: req.file.mimetype,
-      }
+      },
     });
 
     blobStream.end(req.file.buffer);
@@ -67,13 +68,12 @@ router.post('/upload', verifyFirebaseToken, upload.single('receipt'), async (req
     });
 
     blobStream.on('finish', async () => {
-      // Make the file publicly accessible (optional)
-      await file.makePublic();
-
+      await file.makePublic(); // Optional, depending on privacy
       const publicUrl = file.publicUrl();
+
       res.status(200).json({
         message: 'Receipt uploaded successfully',
-        url: publicUrl
+        url: publicUrl,
       });
     });
   } catch (err) {
