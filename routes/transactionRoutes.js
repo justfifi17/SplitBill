@@ -30,7 +30,8 @@ const verifyFirebaseToken = require('../middleware/authMiddleware');
  *         description: Expense added successfully
  */
 router.post('/add', /*verifyFirebaseToken,*/ async (req, res) => {
-  const userId = req.user.uid;
+  //const userId = req.user.uid;
+  const userId = 'test-user-id'; 
   const { groupId, totalAmount, description } = req.body;
 
   if (!groupId || !totalAmount || !description) {
@@ -108,7 +109,8 @@ router.post('/add', /*verifyFirebaseToken,*/ async (req, res) => {
  *         description: Remaining cent resolved
  */
 router.post('/resolve-cent/:transactionId', /*verifyFirebaseToken,*/ async (req, res) => {
-  const userId = req.user.uid;
+  //const userId = req.user.uid;
+  const userId = 'test-user-id'; 
   const { decision } = req.body;
   const transactionId = req.params.transactionId;
 
