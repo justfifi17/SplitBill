@@ -311,4 +311,53 @@ router.post('/accept-invite', async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
+
+
+/**
+ * @swagger
+ * /groups/{groupId}/remove/{userId}:
+ *   delete:
+ *     summary: Remove a member from a group
+ *     tags: [Groups]
+ *     parameters:
+ *       - name: groupId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Member removed successfully
+ *       404:
+ *         description: Group or member not found
+ *       500:
+ *         description: Server error
+ */
+router.delete('/:groupId/remove/:userId', async (req, res) => {
+  const { groupId, userId } = req.params;
+
+  try {
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    if (!group.members.includes(userId)) {
+      return res.status(404).json({ message: 'User is not a member of this group' });
+    }
+
+    group.members = group.members.filter(uid => uid !== userId);
+    await group.save();
+
+    res.status(200).json({ message: 'Member removed successfully', group });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to remove member', error: err.message });
+  }
+});
+
 module.exports = router;
