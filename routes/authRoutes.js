@@ -79,10 +79,8 @@ router.post('/signup', async (req, res) => {
  * @swagger
  * /auth/update-email:
  *   put:
- *     summary: Update user email
+ *     summary: Update user email (demo)
  *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -94,35 +92,31 @@ router.post('/signup', async (req, res) => {
  *                 type: string
  *     responses:
  *       200:
- *         description: Email updated
+ *         description: Email updated (simulated)
  *       400:
  *         description: Invalid email
- *       401:
- *         description: Unauthorized
  */
-router.put('/update-email', verifyFirebaseToken, async (req, res) => {
+router.put('/update-email', async (req, res) => {
     const { email } = req.body;
   
-    if (!email) return res.status(400).json({ message: 'Email is required' });
-  
-    try {
-      const user = await admin.auth().updateUser(req.user.uid, { email });
-      res.status(200).json({ message: 'Email updated', user });
-    } catch (err) {
-      console.error('Update email error:', err);
-      res.status(500).json({ message: 'Failed to update email', error: err.message });
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
     }
+  
+    res.status(200).json({
+      message: 'Email update simulated for demo user',
+      updatedEmail: email
+    });
   });
+  
 
   
 /**
  * @swagger
  * /auth/update-password:
  *   put:
- *     summary: Update user password
+ *     summary: Update user password (demo)
  *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -134,27 +128,23 @@ router.put('/update-email', verifyFirebaseToken, async (req, res) => {
  *                 type: string
  *     responses:
  *       200:
- *         description: Password updated
+ *         description: Password updated (simulated)
  *       400:
  *         description: Invalid password
- *       401:
- *         description: Unauthorized
  */
-router.put('/update-password', verifyFirebaseToken, async (req, res) => {
+router.put('/update-password', async (req, res) => {
     const { password } = req.body;
   
     if (!password || password.length < 6) {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
   
-    try {
-      const user = await admin.auth().updateUser(req.user.uid, { password });
-      res.status(200).json({ message: 'Password updated successfully', user });
-    } catch (err) {
-      console.error('Update password error:', err);
-      res.status(500).json({ message: 'Failed to update password', error: err.message });
-    }
+    res.status(200).json({
+      message: 'Password update simulated for demo user',
+      newPasswordSet: true
+    });
   });
+  
   
 
 /**
