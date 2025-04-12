@@ -8,7 +8,7 @@ const CharityPool = require('../models/CharityPool');
 // TEMP: Replace with verifyFirebaseToken in production
 // const verifyFirebaseToken = require('../middleware/authMiddleware');
 
-// 👇 Replace with real user ID extraction later
+// Replace with real user ID extraction later
 const DEMO_USER_ID = 'test-user-id';
 
 /**
@@ -37,8 +37,6 @@ const DEMO_USER_ID = 'test-user-id';
  *         description: Expense added successfully
  *       400:
  *         description: Missing required fields
- *       403:
- *         description: User is not a member of the group
  *       404:
  *         description: Group not found
  *       500:

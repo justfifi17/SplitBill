@@ -1,4 +1,3 @@
-// models/Invitation.js
 const mongoose = require('mongoose');
 
 const invitationSchema = new mongoose.Schema({
