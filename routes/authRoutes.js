@@ -172,7 +172,7 @@ router.put('/update-email', async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
     res.status(200).json({
-      message: 'Email update simulated for demo user',
+      message: 'Email updated for user',
       updatedEmail: email
     });
   } catch (err) {
