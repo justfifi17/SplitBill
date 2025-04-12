@@ -4,7 +4,12 @@ const router = express.Router();
 const Transaction = require('../models/Transaction');
 const Group = require('../models/Group');
 const CharityPool = require('../models/CharityPool');
-// const verifyFirebaseToken = require('../middleware/authMiddleware'); // Currently disabled for testing
+
+// TEMP: Replace with verifyFirebaseToken in production
+// const verifyFirebaseToken = require('../middleware/authMiddleware');
+
+// 👇 Replace with real user ID extraction later
+const DEMO_USER_ID = 'test-user-id';
 
 /**
  * @swagger
@@ -18,10 +23,6 @@ const CharityPool = require('../models/CharityPool');
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - groupId
- *               - totalAmount
- *               - description
  *             properties:
  *               groupId:
  *                 type: string
@@ -36,7 +37,7 @@ const CharityPool = require('../models/CharityPool');
  *         description: Expense added successfully
  */
 router.post('/add', async (req, res) => {
-  const userId = 'test-user-id'; // Replace with real UID in production
+  const userId = DEMO_USER_ID;
   const { groupId, totalAmount, description, receiptUrl } = req.body;
 
   if (!groupId || !totalAmount || !description) {
@@ -63,7 +64,7 @@ router.post('/add', async (req, res) => {
 
     const splitAmong = members.map(uid => ({
       user: uid,
-      amount: perPersonRounded
+      amount: perPersonRounded,
     }));
 
     const transaction = new Transaction({
@@ -71,11 +72,11 @@ router.post('/add', async (req, res) => {
       paidBy: userId,
       totalAmount,
       description,
+      receiptUrl: receiptUrl || '',
       splitAmong,
       remainingCent,
       resolved: false,
       resolutionType: null,
-      receiptUrl: receiptUrl || null
     });
 
     await transaction.save();
@@ -85,17 +86,13 @@ router.post('/add', async (req, res) => {
       transaction: {
         id: transaction._id,
         ...transaction._doc
-      }
+      },
     });
   } catch (err) {
-    console.error('Transaction creation failed:', err.message);
-    res.status(500).json({
-      message: 'Failed to add expense',
-      error: err.message
-    });
+    console.error('Error adding transaction:', err);
+    res.status(500).json({ message: 'Failed to add expense', error: err.message });
   }
 });
-
 
 /**
  * @swagger
@@ -123,7 +120,7 @@ router.post('/add', async (req, res) => {
  *         description: Remaining cent resolved
  */
 router.post('/resolve-cent/:transactionId', async (req, res) => {
-  const userId = 'test-user-id'; // Replace with real UID in production
+  const userId = DEMO_USER_ID;
   const { decision } = req.body;
   const transactionId = req.params.transactionId;
 
@@ -133,9 +130,7 @@ router.post('/resolve-cent/:transactionId', async (req, res) => {
 
   try {
     const transaction = await Transaction.findById(transactionId);
-    if (!transaction) {
-      return res.status(404).json({ message: 'Transaction not found' });
-    }
+    if (!transaction) return res.status(404).json({ message: 'Transaction not found' });
 
     if (transaction.resolved) {
       return res.status(400).json({ message: 'Remaining cent already resolved' });
@@ -156,33 +151,25 @@ router.post('/resolve-cent/:transactionId', async (req, res) => {
 
       result = {
         donated: transaction.remainingCent,
-        newCharityTotal: pool.totalCents / 100
+        newCharityTotal: pool.totalCents / 100,
       };
     } else {
       const unlucky = transaction.splitAmong[Math.floor(Math.random() * transaction.splitAmong.length)];
+      result = { unluckyUser: unlucky.user, paysExtra: transaction.remainingCent };
+
       transaction.resolutionType = 'game';
       transaction.resolved = true;
       await transaction.save();
-
-      result = {
-        unluckyUser: unlucky.user,
-        paysExtra: transaction.remainingCent
-      };
     }
 
     res.status(200).json({
-      message: `Remaining cent resolved by '${decision}'`,
-      transactionId: transaction._id,
-      resolution: result
+      message: `Remaining cent resolved by ${decision}`,
+      resolution: result,
     });
   } catch (err) {
-    console.error('Error resolving leftover cent:', err.message);
-    res.status(500).json({
-      message: 'Error resolving cent',
-      error: err.message
-    });
+    console.error('Error resolving cent:', err);
+    res.status(500).json({ message: 'Error resolving cent', error: err.message });
   }
 });
-
 
 module.exports = router;

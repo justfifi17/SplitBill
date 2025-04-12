@@ -3,7 +3,7 @@ const admin = require('../config/firebaseAdmin');
 
 const DEMO_USER = {
   uid: 'demo-user-123',
-  email: 'demo@splitbill.com',
+  email: 'demo@gmail.com',
 };
 
 const demoAuth = async (req, res, next) => {
