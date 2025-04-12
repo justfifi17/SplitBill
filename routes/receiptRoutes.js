@@ -44,7 +44,7 @@ router.get('/', (req, res) => {
 });
 
 // ✅ Working Firebase Storage Upload Handler
-router.post('/upload', verifyFirebaseToken, upload.single('receipt'), async (req, res) => {
+router.post('/upload', /*verifyFirebaseToken,*/ upload.single('receipt'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
   }

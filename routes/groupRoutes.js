@@ -24,7 +24,7 @@ const router = express.Router();
  *       201:
  *         description: Group created
  */
-router.post('/create', verifyFirebaseToken, async (req, res) => {
+router.post('/create', /*verifyFirebaseToken,*/ async (req, res) => {
   const { groupName } = req.body;
   const userId = req.user.uid;
 
@@ -55,7 +55,7 @@ router.post('/create', verifyFirebaseToken, async (req, res) => {
  *       200:
  *         description: List of groups
  */
-router.get('/my-groups', verifyFirebaseToken, async (req, res) => {
+router.get('/my-groups', /*verifyFirebaseToken,*/ async (req, res) => {
   const userId = req.user.uid;
 
   try {
@@ -82,7 +82,7 @@ router.get('/my-groups', verifyFirebaseToken, async (req, res) => {
  *       200:
  *         description: Joined successfully
  */
-router.post('/join/:groupId', verifyFirebaseToken, async (req, res) => {
+router.post('/join/:groupId', /*verifyFirebaseToken,*/ async (req, res) => {
   const userId = req.user.uid;
   const groupId = req.params.groupId;
 

@@ -29,7 +29,7 @@ const verifyFirebaseToken = require('../middleware/authMiddleware');
  *       201:
  *         description: Expense added successfully
  */
-router.post('/add', verifyFirebaseToken, async (req, res) => {
+router.post('/add', /*verifyFirebaseToken,*/ async (req, res) => {
   const userId = req.user.uid;
   const { groupId, totalAmount, description } = req.body;
 
@@ -107,7 +107,7 @@ router.post('/add', verifyFirebaseToken, async (req, res) => {
  *       200:
  *         description: Remaining cent resolved
  */
-router.post('/resolve-cent/:transactionId', verifyFirebaseToken, async (req, res) => {
+router.post('/resolve-cent/:transactionId', /*verifyFirebaseToken,*/ async (req, res) => {
   const userId = req.user.uid;
   const { decision } = req.body;
   const transactionId = req.params.transactionId;
