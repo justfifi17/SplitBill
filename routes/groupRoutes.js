@@ -6,7 +6,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /groups/create:
+ * api/groups/create:
  *   post:
  *     summary: Create a new group
  *     tags: [Groups]
