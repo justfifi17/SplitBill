@@ -17,7 +17,7 @@ const TransactionSchema = new mongoose.Schema({
   resolved: { type: Boolean, default: false }, // was the extra cent resolved?
   resolutionType: { type: String, enum: ['donate', 'game', null], default: null }
   ,
-  extraCentDecision: { type: String, enum: ['donate', 'game'], default: 'donate' },
+  extraCentDecision: { type: String, enum: ['donate', 'game'], default: null},
   extraCentWinner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 }, { timestamps: true });
 

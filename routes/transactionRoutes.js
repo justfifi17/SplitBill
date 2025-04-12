@@ -82,7 +82,11 @@ router.post('/add', async (req, res) => {
 
     res.status(201).json({
       message: 'Expense added successfully with split details',
-      transaction,
+      transaction: {
+        id: transaction._id,
+        ...transaction._doc,
+
+      },
     });
   } catch (err) {
     res.status(500).json({ message: 'Failed to add expense', error: err.message });
