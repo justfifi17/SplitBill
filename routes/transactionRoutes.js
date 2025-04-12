@@ -4,7 +4,7 @@ const router = express.Router();
 const Transaction = require('../models/Transaction');
 const Group = require('../models/Group');
 const CharityPool = require('../models/CharityPool');
-const verifyFirebaseToken = require('../middleware/authMiddleware');
+// const verifyFirebaseToken = require('../middleware/authMiddleware'); // Currently disabled for testing
 
 /**
  * @swagger
@@ -18,6 +18,10 @@ const verifyFirebaseToken = require('../middleware/authMiddleware');
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - groupId
+ *               - totalAmount
+ *               - description
  *             properties:
  *               groupId:
  *                 type: string
@@ -25,14 +29,15 @@ const verifyFirebaseToken = require('../middleware/authMiddleware');
  *                 type: number
  *               description:
  *                 type: string
+ *               receiptUrl:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Expense added successfully
  */
-router.post('/add', /*verifyFirebaseToken,*/ async (req, res) => {
-  //const userId = req.user.uid;
-  const userId = 'test-user-id'; 
-  const { groupId, totalAmount, description } = req.body;
+router.post('/add', async (req, res) => {
+  const userId = 'test-user-id'; // Replace with req.user.uid in production
+  const { groupId, totalAmount, description, receiptUrl } = req.body;
 
   if (!groupId || !totalAmount || !description) {
     return res.status(400).json({ message: 'All fields are required' });
@@ -66,6 +71,7 @@ router.post('/add', /*verifyFirebaseToken,*/ async (req, res) => {
       paidBy: userId,
       totalAmount,
       description,
+      receiptUrl, // ✅ Added
       splitAmong,
       remainingCent,
       resolved: false,
@@ -108,9 +114,8 @@ router.post('/add', /*verifyFirebaseToken,*/ async (req, res) => {
  *       200:
  *         description: Remaining cent resolved
  */
-router.post('/resolve-cent/:transactionId', /*verifyFirebaseToken,*/ async (req, res) => {
-  //const userId = req.user.uid;
-  const userId = 'test-user-id'; 
+router.post('/resolve-cent/:transactionId', async (req, res) => {
+  const userId = 'test-user-id'; // Replace with req.user.uid in production
   const { decision } = req.body;
   const transactionId = req.params.transactionId;
 

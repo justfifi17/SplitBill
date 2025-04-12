@@ -6,6 +6,7 @@ const TransactionSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true },
   splitAmount: Number,
   paidBy: { type: String, required: true },
+  receiptUrl: { type: String},
   splitAmong: [
     {
       user: { type: String, required: true }, // Firebase UID
