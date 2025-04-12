@@ -35,6 +35,14 @@ const DEMO_USER_ID = 'test-user-id';
  *     responses:
  *       201:
  *         description: Expense added successfully
+ *       400:
+ *         description: Missing required fields
+ *       403:
+ *         description: User is not a member of the group
+ *       404:
+ *         description: Group not found
+ *       500:
+ *         description: Server error
  */
 router.post('/add', async (req, res) => {
   const userId = DEMO_USER_ID;
@@ -117,7 +125,23 @@ router.post('/add', async (req, res) => {
  *                 enum: [donate, game]
  *     responses:
  *       200:
- *         description: Remaining cent resolved
+ *         description: Remaining cent resolved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 resolution:
+ *                   type: object
+ *                   description: Resolution result (donation summary or selected user)
+ *       400:
+ *         description: Invalid decision or already resolved
+ *       404:
+ *         description: Transaction not found
+ *       500:
+ *         description: Internal server error
  */
 router.post('/resolve-cent/:transactionId', async (req, res) => {
   const userId = DEMO_USER_ID;
