@@ -7,7 +7,7 @@ admin.initializeApp({
     privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     
   }),
-  storageBucket: 'splitbill-8caa8.appspot.com',
+  storageBucket: 'splitbill-8caa8.firebasestorage.app',
 });
 
 module.exports = admin;
