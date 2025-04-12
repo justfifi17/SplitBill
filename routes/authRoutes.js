@@ -127,7 +127,7 @@ router.post('/login', async (req, res) => {
   
       // For demo/testing: simulate successful login
       return res.status(200).json({
-        message: 'Login simulated for demo user',
+        message: 'Login simulated for user',
         user: {
           uid: user.uid,
           email: user.email,
@@ -146,7 +146,7 @@ router.post('/login', async (req, res) => {
  * @swagger
  * /auth/update-email:
  *   put:
- *     summary: Update user email (demo)
+ *     summary: Update user email 
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -184,7 +184,7 @@ router.put('/update-email', async (req, res) => {
  * @swagger
  * /auth/update-password:
  *   put:
- *     summary: Update user password (demo)
+ *     summary: Update user password 
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -210,7 +210,7 @@ router.put('/update-password', async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
     res.status(200).json({
-      message: 'Password update simulated for demo user',
+      message: 'Password update simulated for user',
       newPasswordSet: true
     });
   } catch (err) {
@@ -222,7 +222,7 @@ router.put('/update-password', async (req, res) => {
  * @swagger
  * /auth/logout:
  *   post:
- *     summary: Logout a user (revoke Firebase token)
+ *     summary: Logout a user 
  *     tags: [Auth]
  *     responses:
  *       200:
