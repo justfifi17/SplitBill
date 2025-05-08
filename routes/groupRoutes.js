@@ -105,13 +105,15 @@ router.get('/:groupId', async (req, res) => {
     }
 
     const transactions = await Transaction.find({ groupId }).lean();
-    const users = await User.find({ _id: { $in: group.members } }).lean();
+    const users = await User.find({ _id: { $in: group.members } })
+      .select('_id name email') // Optional: include only needed fields
+      .lean();
 
     res.status(200).json({
       groupName: group.groupName,
       members: group.members,
       transactions,
-      users: users.map(u => ({ _id: u._id, name: u.name })),
+      users, 
     });
   } catch (err) {
     console.error(err);
