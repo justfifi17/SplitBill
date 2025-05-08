@@ -48,6 +48,29 @@ router.post('/create', /*verifyFirebaseToken,*/ async (req, res) => {
   }
 });
 
+
+/**
+ * @swagger
+ * /groups/my-groups:
+ *   get:
+ *     summary: Get groups the user belongs to
+ *     tags: [Groups]
+ *     responses:
+ *       200:
+ *         description: List of groups
+ */
+router.get('/my-groups', /*verifyFirebaseToken,*/ async (req, res) => {
+  //const userId = req.user.uid;
+  const userId = 'test-user-id'; 
+
+  try {
+    const groups = await Group.find({ members: userId });
+    res.status(200).json(groups);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch groups', error: err.message });
+  }
+});
+
 // ✅ Get full group details by ID
 /**
  * @swagger
@@ -90,28 +113,6 @@ router.get('/:groupId', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to fetch group details', error: err.message });
-  }
-});
-
-/**
- * @swagger
- * /groups/my-groups:
- *   get:
- *     summary: Get groups the user belongs to
- *     tags: [Groups]
- *     responses:
- *       200:
- *         description: List of groups
- */
-router.get('/my-groups', /*verifyFirebaseToken,*/ async (req, res) => {
-  //const userId = req.user.uid;
-  const userId = 'test-user-id'; 
-
-  try {
-    const groups = await Group.find({ members: userId });
-    res.status(200).json(groups);
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch groups', error: err.message });
   }
 });
 
