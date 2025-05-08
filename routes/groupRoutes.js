@@ -2,6 +2,7 @@ const express = require('express');
 const Group = require('../models/Group');
 const verifyFirebaseToken = require('../middleware/authMiddleware');
 const Transaction = require('../models/Transaction');
+const User = require('../models/User');
 const Invitation = require('../models/Invitation');
 
 const router = express.Router();
@@ -104,11 +105,13 @@ router.get('/:groupId', async (req, res) => {
     }
 
     const transactions = await Transaction.find({ groupId }).lean();
+    const users = await User.find({ _id: { $in: group.members } }).lean();
 
     res.status(200).json({
       groupName: group.groupName,
       members: group.members,
       transactions,
+      users: users.map(u => ({ _id: u._id, name: u.name })),
     });
   } catch (err) {
     console.error(err);
