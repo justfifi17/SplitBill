@@ -1,6 +1,7 @@
 const express = require('express');
 const Group = require('../models/Group');
 const verifyFirebaseToken = require('../middleware/authMiddleware');
+const Transaction = require('../models/Transaction');
 const Invitation = require('../models/Invitation');
 
 const router = express.Router();
@@ -44,6 +45,51 @@ router.post('/create', /*verifyFirebaseToken,*/ async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: 'Failed to create group', error: err.message });
+  }
+});
+
+// ✅ Get full group details by ID
+/**
+ * @swagger
+ * /groups/{groupId}:
+ *   get:
+ *     summary: Get full group details
+ *     tags: [Groups]
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the group
+ *     responses:
+ *       200:
+ *         description: Group found
+ *       404:
+ *         description: Group not found
+ *       500:
+ *         description: Server error
+ */
+router.get('/:groupId', async (req, res) => {
+  const { groupId } = req.params;
+
+  try {
+    const group = await Group.findById(groupId).lean();
+
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    const transactions = await Transaction.find({ groupId }).lean();
+
+    res.status(200).json({
+      groupName: group.groupName,
+      members: group.members,
+      transactions,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch group details', error: err.message });
   }
 });
 
