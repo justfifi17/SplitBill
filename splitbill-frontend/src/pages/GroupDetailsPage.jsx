@@ -60,7 +60,7 @@ const GroupDetailsPage = () => {
       {/* Header */}
       <header className="bg-white shadow-sm p-4 flex justify-between items-center">
         <h1 className="text-xl font-bold">{'SplitBill'}</h1>
-        <h1 className="text-xl font-bold text-blue-600">{group?.groupName}</h1>
+        <h1 className="text-xl font-bold">{group?.groupName}</h1>
         <button className="text-gray-600">
           <FaArrowLeft />
         </button>
