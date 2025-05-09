@@ -20,6 +20,7 @@ const GroupDetailsPage = () => {
         setGroup(res.data.group);
         setTransactions(res.data.transactions);
         setUsers(res.data.users);
+        console.log('Fetched users:', res.data.users); // Debug line
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -53,35 +54,64 @@ const GroupDetailsPage = () => {
     return { amount: '$0.00', color: 'text-gray-400' };
   };
 
-  const currentUserId = 'ctEaRg3hmOeZZBgpD62ryijwqAz1'; // Replace with actual auth ID in real app
+  const currentUserId = 'ctEaRg3hmOeZZBgpD62ryijwqAz1';
 
   return (
     <div className="min-h-screen bg-gray-100 pb-20 flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">{'SplitBill'}</h1>
-        <h1 className="text-xl font-bold">{group?.groupName}</h1>
+      <header className="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-20">
+        <h1 className="text-xl font-bold">SplitBill</h1>
         <button className="text-gray-600">
           <FaArrowLeft />
         </button>
       </header>
 
-      {/* Group Members */}
-      <section className="bg-white px-4 py-4 border-b overflow-x-auto">
-        <div className="flex gap-4">
-          {Array.isArray(users) && users.map((user) => (
-            <div key={user._id} className="flex flex-col items-center text-sm">
-              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                <FaUser className="text-sm" />
-              </div>
-              <span className="text-xs mt-1 text-center w-16 truncate">{user.name}</span>
-            </div>
-          ))}
+      {/* Group Name */}
+      <div className="px-4 pt-4">
+        <h2 className="text-base font-semibold text-gray-800">{group?.groupName || 'Group Details'}</h2>
+      </div>
+
+      {/* Group Members Scrollable Row */}
+      {Array.isArray(users) && users.length > 0 && (
+        <div className="mt-3 px-4 pb-2 overflow-x-auto">
+          <div className="flex gap-4 w-max">
+            {users.map((user, index) => {
+              // Generate pastel color
+              const hue = (user.name?.charCodeAt(0) || index * 30) % 360;
+              const bgColor = `hsl(${hue}, 70%, 85%)`;
+              const textColor = `hsl(${hue}, 60%, 40%)`;
+
+              // Extract initials
+              const initials =
+                user.name
+                  ?.split(' ')
+                  .map((part) => part[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase() || '?';
+
+              return (
+                <div
+                  key={user._id}
+                  className="flex flex-col items-center text-sm"
+                  title={user.name}
+                >
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm font-bold"
+                    style={{ backgroundColor: bgColor, color: textColor }}
+                  >
+                    {initials}
+                  </div>
+                  <span className="text-xs mt-1 text-center w-16 truncate">{user.name}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </section>
+      )}
 
       {/* Transactions */}
-      <main className="flex-1 overflow-y-auto px-4 py-3">
+      <main className="flex-1 overflow-y-auto px-4 py-4">
         {loading && <p className="text-center">Loading...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
         {!loading && !error && Array.isArray(transactions) && transactions.length === 0 && (
@@ -90,15 +120,17 @@ const GroupDetailsPage = () => {
         <div className="space-y-4">
           {Array.isArray(transactions) && transactions.map((tx) => {
             const balance = getBalanceText(tx, currentUserId);
+            const paidByName = tx.paidBy === currentUserId ? 'You' : getName(tx.paidBy);
+
             return (
               <div
                 key={tx._id}
-                className="bg-white p-4 rounded-xl shadow-md border border-gray-100 flex justify-between items-start"
+                className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition"
               >
                 <div>
                   <h3 className="font-semibold text-base text-gray-800">{tx.description}</h3>
                   <p className="text-sm text-gray-500">
-                    Paid by: <span className="text-gray-700 font-medium">{getName(tx.paidBy)}</span>
+                    Paid by: <span className="text-gray-700 font-medium">{paidByName}</span>
                   </p>
                   <p className="mt-1 text-sm text-gray-500">
                     Total: <span className="font-semibold">${tx.totalAmount.toFixed(2)}</span>

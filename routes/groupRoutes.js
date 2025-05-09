@@ -101,31 +101,43 @@ router.get('/:groupId', async (req, res) => {
 
   try {
     const group = await Group.findById(groupId).lean();
-
-    if (!group) {
-      return res.status(404).json({ message: 'Group not found' });
-    }
+    if (!group) return res.status(404).json({ message: 'Group not found' });
 
     const transactions = await Transaction.find({ groupId }).lean();
+
+    // 🔁 Gather all unique user IDs (members + transaction participants)
+    const userIdSet = new Set(group.members.map((id) => id.toString()));
+
+    transactions.forEach((tx) => {
+      if (tx.paidBy) userIdSet.add(tx.paidBy.toString());
+      tx.splitAmong?.forEach((s) => userIdSet.add(s.user.toString()));
+    });
+
+    const userIds = Array.from(userIdSet);
+
+    // ✅ Fetch users from Firebase and return _id + name
     const users = await Promise.all(
-      group.members.map(async (uid) => {
+      userIds.map(async (uid) => {
         try {
           const userRecord = await admin.auth().getUser(uid);
-          return { _id: uid, name: userRecord.displayName || userRecord.email || 'Unnamed User' };
+          return {
+            _id: uid,
+            name: userRecord.displayName || userRecord.email || 'Unnamed User',
+          };
         } catch (err) {
+          console.warn(`Failed to fetch user ${uid} from Firebase:`, err.message);
           return { _id: uid, name: 'Unknown User' };
         }
       })
     );
 
     res.status(200).json({
-      groupName: group.groupName,
-      members: group.members,
+      group,
       transactions,
       users,
     });
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching group details:', err);
     res.status(500).json({ message: 'Failed to fetch group details', error: err.message });
   }
 });
