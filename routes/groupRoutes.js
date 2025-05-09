@@ -1,9 +1,11 @@
 const express = require('express');
+const { getAuth } = require('firebase-admin/auth');
 const Group = require('../models/Group');
 const verifyFirebaseToken = require('../middleware/authMiddleware');
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const Invitation = require('../models/Invitation');
+const admin = require('../config/firebaseAdmin');
 
 const router = express.Router();
 
@@ -72,7 +74,7 @@ router.get('/my-groups', /*verifyFirebaseToken,*/ async (req, res) => {
   }
 });
 
-// ✅ Get full group details by ID
+// Get full group details by ID
 /**
  * @swagger
  * /groups/{groupId}:
@@ -105,15 +107,22 @@ router.get('/:groupId', async (req, res) => {
     }
 
     const transactions = await Transaction.find({ groupId }).lean();
-    const users = await User.find({ _id: { $in: group.members } })
-      .select('_id name email') // Optional: include only needed fields
-      .lean();
+    const users = await Promise.all(
+      group.members.map(async (uid) => {
+        try {
+          const userRecord = await admin.auth().getUser(uid);
+          return { _id: uid, name: userRecord.displayName || userRecord.email || 'Unnamed User' };
+        } catch (err) {
+          return { _id: uid, name: 'Unknown User' };
+        }
+      })
+    );
 
     res.status(200).json({
       groupName: group.groupName,
       members: group.members,
       transactions,
-      users, 
+      users,
     });
   } catch (err) {
     console.error(err);
@@ -204,6 +213,25 @@ router.patch('/add-member', async (req, res) => {
 
     if (group.members.includes(memberId)) {
       return res.status(400).json({ message: 'User already a member of this group' });
+    }
+
+    // Check if the user exists in MongoDB
+    let user = await User.findById(memberId);
+    if (!user) {
+      // Fetch user details from Firebase Auth
+      const firebaseUser = await admin.auth().getUser(memberId);
+      if (!firebaseUser) {
+        return res.status(404).json({ message: 'User not found in Firebase Auth' });
+      }
+
+      // Create a new user document in MongoDB
+      user = new User({
+        _id: firebaseUser.uid,
+        name: firebaseUser.displayName || 'Unknown',
+        email: firebaseUser.email || 'NoEmailProvided',
+      });
+
+      await user.save();
     }
 
     group.members.push(memberId);
