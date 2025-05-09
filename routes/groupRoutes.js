@@ -98,16 +98,19 @@ router.get('/my-groups', /*verifyFirebaseToken,*/ async (req, res) => {
  */
 router.get('/:groupId', async (req, res) => {
   const { groupId } = req.params;
+  const uid = 'ctEaRg3hmOeZZBgpD62ryijwqAz1'; // Replace with: const uid = req.user.uid if using authMiddleware
 
   try {
     const group = await Group.findById(groupId).lean();
     if (!group) return res.status(404).json({ message: 'Group not found' });
 
+    if (!group.members.map(String).includes(uid)) {
+      return res.status(403).json({ message: 'Access denied. You are not a member of this group.' });
+    }
+
     const transactions = await Transaction.find({ groupId }).lean();
 
-    // 🔁 Gather all unique user IDs (members + transaction participants)
     const userIdSet = new Set(group.members.map((id) => id.toString()));
-
     transactions.forEach((tx) => {
       if (tx.paidBy) userIdSet.add(tx.paidBy.toString());
       tx.splitAmong?.forEach((s) => userIdSet.add(s.user.toString()));
@@ -115,7 +118,6 @@ router.get('/:groupId', async (req, res) => {
 
     const userIds = Array.from(userIdSet);
 
-    // ✅ Fetch users from Firebase and return _id + name
     const users = await Promise.all(
       userIds.map(async (uid) => {
         try {
@@ -124,8 +126,7 @@ router.get('/:groupId', async (req, res) => {
             _id: uid,
             name: userRecord.displayName || userRecord.email || 'Unnamed User',
           };
-        } catch (err) {
-          console.warn(`Failed to fetch user ${uid} from Firebase:`, err.message);
+        } catch {
           return { _id: uid, name: 'Unknown User' };
         }
       })
@@ -137,8 +138,8 @@ router.get('/:groupId', async (req, res) => {
       users,
     });
   } catch (err) {
-    console.error('Error fetching group details:', err);
-    res.status(500).json({ message: 'Failed to fetch group details', error: err.message });
+    console.error('Error in GET /groups/:groupId:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 

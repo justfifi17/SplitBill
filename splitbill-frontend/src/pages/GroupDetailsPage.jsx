@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaArrowLeft, FaHome, FaUsers, FaUser, FaUserFriends } from 'react-icons/fa';
 
 const GroupDetailsPage = () => {
   const { groupId } = useParams();
+  const navigate = useNavigate();
   const [group, setGroup] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const currentUserId = 'ctEaRg3hmOeZZBgpD62ryijwqAz1';
 
   useEffect(() => {
     const fetchGroupDetails = async () => {
@@ -18,9 +21,15 @@ const GroupDetailsPage = () => {
           `https://splitbill-api.onrender.com/api/groups/${groupId}`
         );
         setGroup(res.data.group);
+
+        if (!res.data.group.members.includes(currentUserId)) {
+          alert("You are not a member of this group.");
+          navigate('/groups');
+          return;
+        }
+
         setTransactions(res.data.transactions);
         setUsers(res.data.users);
-        console.log('Fetched users:', res.data.users); // Debug line
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -29,39 +38,49 @@ const GroupDetailsPage = () => {
       }
     };
 
+
     fetchGroupDetails();
   }, [groupId]);
 
   const getName = (userId) => {
-    if (!Array.isArray(users)) return userId;
     const user = users.find((u) => u._id === userId);
     return user ? user.name : userId;
   };
 
   const getBalanceText = (tx, userId) => {
-    if (tx.paidBy === userId) {
-      let owed = 0;
-      tx.splitAmong.forEach((split) => {
-        if (split.user !== userId) owed += split.amount;
+    const uid = userId.toString();
+    const paidById = tx.paidBy?.toString();
+
+    if (paidById === uid) {
+      let totalOwed = 0;
+      tx.splitAmong?.forEach((split) => {
+        if (split.user?.toString() !== uid) {
+          totalOwed += split.amount;
+        }
       });
-      return { amount: `+$${owed.toFixed(2)}`, color: 'text-green-600' };
-    } else {
-      const share = tx.splitAmong.find((s) => s.user === userId);
-      if (share) {
-        return { amount: `-$${share.amount.toFixed(2)}`, color: 'text-red-500' };
-      }
+      return {
+        amount: totalOwed > 0 ? `+$${totalOwed.toFixed(2)}` : '$0.00',
+        color: totalOwed > 0 ? 'text-green-600' : 'text-gray-400',
+      };
     }
+
+    const yourShare = tx.splitAmong?.find((s) => s.user?.toString() === uid);
+    if (yourShare) {
+      return {
+        amount: `-$${yourShare.amount.toFixed(2)}`,
+        color: 'text-red-500',
+      };
+    }
+
     return { amount: '$0.00', color: 'text-gray-400' };
   };
-
-  const currentUserId = 'ctEaRg3hmOeZZBgpD62ryijwqAz1';
 
   return (
     <div className="min-h-screen bg-gray-100 pb-20 flex flex-col">
       {/* Header */}
       <header className="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-20">
         <h1 className="text-xl font-bold">SplitBill</h1>
-        <button className="text-gray-600">
+        <button className="text-gray-600" onClick={() => navigate(-1)}>
           <FaArrowLeft />
         </button>
       </header>
@@ -71,17 +90,24 @@ const GroupDetailsPage = () => {
         <h2 className="text-base font-semibold text-gray-800">{group?.groupName || 'Group Details'}</h2>
       </div>
 
-      {/* Group Members Scrollable Row */}
+      {/* Group Members */}
       {Array.isArray(users) && users.length > 0 && (
         <div className="mt-3 px-4 pb-2 overflow-x-auto">
           <div className="flex gap-4 w-max">
             {users.map((user, index) => {
-              // Generate pastel color
-              const hue = (user.name?.charCodeAt(0) || index * 30) % 360;
-              const bgColor = `hsl(${hue}, 70%, 85%)`;
-              const textColor = `hsl(${hue}, 60%, 40%)`;
+              const pastelPalette = [
+                '#cce5ff', '#d1d8ff', '#cde0f6',
+                '#d6e4ff', '#ccf0e1', '#f0e8ff', '#d9f0ff'
+              ];
+              const textPalette = [
+                '#2c74b3', '#4e4edb', '#3673ac',
+                '#30506d', '#2b7b66', '#5e3b8c', '#39789d'
+              ];
 
-              // Extract initials
+              const paletteIndex = index % pastelPalette.length;
+              const bgColor = pastelPalette[paletteIndex];
+              const textColor = textPalette[paletteIndex];
+
               const initials =
                 user.name
                   ?.split(' ')
@@ -90,11 +116,14 @@ const GroupDetailsPage = () => {
                   .slice(0, 2)
                   .toUpperCase() || '?';
 
+              const displayName =
+                user.name.includes('@') ? user.name.split('@')[0] : user.name;
+
               return (
                 <div
                   key={user._id}
                   className="flex flex-col items-center text-sm"
-                  title={user.name}
+                  title={displayName}
                 >
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm font-bold"
@@ -102,7 +131,9 @@ const GroupDetailsPage = () => {
                   >
                     {initials}
                   </div>
-                  <span className="text-xs mt-1 text-center w-16 truncate">{user.name}</span>
+                  <span className="text-xs mt-1 text-center w-16 truncate">
+                    {displayName}
+                  </span>
                 </div>
               );
             })}
@@ -114,52 +145,63 @@ const GroupDetailsPage = () => {
       <main className="flex-1 overflow-y-auto px-4 py-4">
         {loading && <p className="text-center">Loading...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
-        {!loading && !error && Array.isArray(transactions) && transactions.length === 0 && (
-          <p className="text-center text-gray-400">No transactions yet</p>
-        )}
-        <div className="space-y-4">
-          {Array.isArray(transactions) && transactions.map((tx) => {
-            const balance = getBalanceText(tx, currentUserId);
-            const paidByName = tx.paidBy === currentUserId ? 'You' : getName(tx.paidBy);
+        {!loading && !error && (
+          <div className="space-y-4">
+            {transactions
+              .filter((tx) => {
+                const uid = currentUserId.toString();
+                const isPayer = tx.paidBy?.toString() === uid;
+                const isParticipant = tx.splitAmong?.some(
+                  (s) => s.user?.toString() === uid
+                );
+                return isPayer || isParticipant;
+              })
+              .map((tx) => {
+                const balance = getBalanceText(tx, currentUserId);
+                const paidByName =
+                  tx.paidBy?.toString() === currentUserId
+                    ? 'You'
+                    : getName(tx.paidBy);
 
-            return (
-              <div
-                key={tx._id}
-                className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition"
-              >
-                <div>
-                  <h3 className="font-semibold text-base text-gray-800">{tx.description}</h3>
-                  <p className="text-sm text-gray-500">
-                    Paid by: <span className="text-gray-700 font-medium">{paidByName}</span>
-                  </p>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Total: <span className="font-semibold">${tx.totalAmount.toFixed(2)}</span>
-                  </p>
-                </div>
-                <div className={`text-base font-semibold ${balance.color}`}>
-                  {balance.amount}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                return (
+                  <div
+                    key={tx._id}
+                    className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition"
+                  >
+                    <div>
+                      <h3 className="font-semibold text-base text-gray-800">{tx.description}</h3>
+                      <p className="text-sm text-gray-500">
+                        Paid by: <span className="text-gray-700 font-medium">{paidByName}</span>
+                      </p>
+                      <p className="mt-1 text-sm text-gray-500">
+                        Total: <span className="font-semibold">${tx.totalAmount.toFixed(2)}</span>
+                      </p>
+                    </div>
+                    <div className={`text-base font-semibold ${balance.color}`}>
+                      {balance.amount}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        )}
       </main>
 
-      {/* Bottom Navigation */}
+      {/* Footer Navigation */}
       <footer className="fixed bottom-0 left-0 w-full bg-white border-t shadow-md p-2 flex justify-around">
-        <button className="flex flex-col items-center text-gray-400 text-xs">
+        <button onClick={() => navigate('/')} className="flex flex-col items-center text-gray-400 text-xs">
           <FaHome className="w-5 h-5 mb-0.5" />
           Home
         </button>
-        <button className="flex flex-col items-center text-blue-500 text-xs font-semibold">
+        <button onClick={() => navigate('/groups')} className="flex flex-col items-center text-blue-500 text-xs font-semibold">
           <FaUsers className="w-5 h-5 mb-0.5" />
           Groups
         </button>
-        <button className="flex flex-col items-center text-gray-400 text-xs">
+        <button onClick={() => navigate('/friends')} className="flex flex-col items-center text-gray-400 text-xs">
           <FaUserFriends className="w-5 h-5 mb-0.5" />
           Friends
         </button>
-        <button className="flex flex-col items-center text-gray-400 text-xs">
+        <button onClick={() => navigate('/profile')} className="flex flex-col items-center text-gray-400 text-xs">
           <FaUser className="w-5 h-5 mb-0.5" />
           Profile
         </button>
