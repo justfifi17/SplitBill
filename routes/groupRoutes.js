@@ -62,9 +62,8 @@ router.post('/create', /*verifyFirebaseToken,*/ async (req, res) => {
  *       200:
  *         description: List of groups
  */
-router.get('/my-groups', /*verifyFirebaseToken,*/ async (req, res) => {
-  //const userId = req.user.uid;
-  const userId = 'test-user-id'; 
+router.get('/my-groups', /* verifyFirebaseToken, */ async (req, res) => {
+  const userId = req.user?.uid || 'ctEaRg3hmOeZZBgpD62ryijwqAz1'; // fallback while testing
 
   try {
     const groups = await Group.find({ members: userId });
@@ -73,6 +72,7 @@ router.get('/my-groups', /*verifyFirebaseToken,*/ async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch groups', error: err.message });
   }
 });
+
 
 // Get full group details by ID
 /**
