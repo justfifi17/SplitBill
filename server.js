@@ -26,12 +26,14 @@ const groupRoutes = require('./routes/groupRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const receiptRoutes = require('./routes/receiptRoutes');
 const authTestRoutes = require('./routes/authTestRoutes');
+const userRoutes = require('./routes/userRoutes'); // adjust path
 
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/test', authTestRoutes);
+app.use('/api/users', userRoutes);
 
 // Optional health check
 app.get('/api/health', (req, res) => {

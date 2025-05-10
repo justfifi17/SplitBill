@@ -39,7 +39,8 @@ const GroupDetailsPage = () => {
 
   useEffect(() => {
     fetchGroupDetails();
-  }, [groupId, navigate]);
+      console.log('Fetched transactions:', transactions);
+  }, [groupId, navigate, transactions]);
 
   const getName = (userId) => {
     const user = users.find((u) => u._id === userId);
@@ -157,6 +158,8 @@ const GroupDetailsPage = () => {
               .map((tx) => {
                 const balance = getBalanceText(tx, currentUserId);
                 const paidByName = tx.paidBy?.toString() === currentUserId ? 'You' : getName(tx.paidBy);
+                
+                console.log('tx.receiptUrl:', tx.receiptUrl);
 
                 return (
                   <div key={tx._id} className="relative bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition">
@@ -165,16 +168,21 @@ const GroupDetailsPage = () => {
                       <p className="text-sm text-gray-500">
                         Paid by: <span className="text-gray-700 font-medium">{paidByName}</span>
                       </p>
-                      {tx.receiptUrl && (
-                        <a
-                          href={tx.receiptUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-600 mt-1 inline-block"
-                        >
-                          🧾 Receipt
-                        </a>
+                      {tx.receiptUrl ? (
+                        <div className="mt-2">
+                          <a
+                            href={tx.receiptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 underline flex items-center gap-1"
+                          >
+                            <span className="text-base">📎</span> View Receipt
+                          </a>
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-xs text-gray-400 italic">No receipt attached</div>
                       )}
+
 
 
                       
@@ -230,10 +238,6 @@ const GroupDetailsPage = () => {
         <button onClick={() => navigate('/')} className="flex flex-col items-center text-gray-400 text-xs">
           <FaHome className="w-5 h-5 mb-0.5" />
           Home
-        </button>
-        <button onClick={() => navigate('/groups')} className="flex flex-col items-center text-blue-500 text-xs font-semibold">
-          <FaUsers className="w-5 h-5 mb-0.5" />
-          Groups
         </button>
         <button onClick={() => navigate('/friends')} className="flex flex-col items-center text-gray-400 text-xs">
           <FaUserFriends className="w-5 h-5 mb-0.5" />

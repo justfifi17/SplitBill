@@ -14,6 +14,7 @@ import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AddExpensePage from './pages/AddExpensePage';
+import FriendsPage from './pages/FriendsPage';
 
 function App() {
   return (
@@ -48,17 +49,27 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          <Route 
-            path="/add-expense/:groupId" 
-            element={<AddExpensePage />} />
-
-
+          <Route
+            path="/add-expense/:groupId"
+            element={
+              <ProtectedRoute>
+                <AddExpensePage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/profile"
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/friends"
+            element={
+              <ProtectedRoute>
+                <FriendsPage />
               </ProtectedRoute>
             }
           />

@@ -193,13 +193,9 @@ const HomePage = () => {
           <FaHome className="w-5 h-5 mb-0.5" />
           Home
         </button>
-        <button className="flex flex-col items-center text-gray-400 text-xs">
-          <FaUsers className="w-5 h-5 mb-0.5" />
-          Groups
-        </button>
-        <button className="flex flex-col items-center text-gray-400 text-xs">
-          <FaUserFriends className="w-5 h-5 mb-0.5" />
-          Friends
+        <button onClick={() => navigate('/friends')} className="flex flex-col items-center text-gray-600 hover:text-blue-600">
+          <FaUserFriends className="text-xl" />
+          <span className="text-xs">Friends</span>
         </button>
         <button
           onClick={() => {
