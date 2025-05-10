@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { FaHome, FaUsers, FaUser, FaUserFriends } from 'react-icons/fa';
-import axios from 'axios';
 
 export default function FriendsPage() {
   const navigate = useNavigate();
@@ -12,38 +11,20 @@ export default function FriendsPage() {
   const [inviteEmail, setInviteEmail] = useState('');
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        try {
-          const res = await axios.get(`https://splitbill-api.onrender.com/api/groups/my-groups`, {
-            headers: {
-              Authorization: `Bearer ${await currentUser.getIdToken()}`,
-            },
-          });
 
-          const emails = new Set();
-          res.data.forEach(group => {
-            group.transactions.forEach(tx => {
-              if (tx.paidBy.email && tx.paidBy.uid !== currentUser.uid) {
-                emails.add(tx.paidBy.email);
-              }
-              tx.participants.forEach(p => {
-                if (p.email && p.uid !== currentUser.uid) {
-                  emails.add(p.email);
-                }
-              });
-            });
-            group.members.forEach(member => {
-              if (member.email && member.uid !== currentUser.uid) {
-                emails.add(member.email);
-              }
-            });
-          });
-          setFriends([...emails]);
-        } catch (err) {
-          console.error('Error loading friends:', err);
-        }
+        // Hardcoded list of users (simulate fetched group users)
+        const simulatedFriends = [
+          { email: 'mine@gmail.com' },
+          { email: 'test@gmail.com' },
+          { email: 'mike34@gmail.com' },
+          { email: 'def@gmail.com' },
+          { email: 'jessiii@gmail.com' },
+          { email: 'abc@gmail.com' }
+        ];
+        setFriends(simulatedFriends);
       } else {
         navigate('/login');
       }
@@ -62,21 +43,26 @@ export default function FriendsPage() {
     <div className="min-h-screen bg-gray-100 pb-20">
       <header className="w-full bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-blue-700">SplitBill</h1>
+          <h1 className="text-2xl font-bold ">SplitBill</h1>
         </div>
       </header>
 
       <main className="w-full max-w-2xl mx-auto px-4 mt-4">
         <h2 className="text-xl font-semibold mb-4 text-gray-800">Friends</h2>
 
-        <section className="mb-6">
-          <h3 className="text-md font-semibold mb-2">Your Friends</h3>
+        <section className="mb-6 max-h-96 overflow-y-auto border border-gray-200 rounded-lg p-4 bg-white">
+          <h3 className="text-md font-semibold mb-3">Accounts</h3>
           {friends.length === 0 ? (
             <p className="text-sm text-gray-500">No shared users found.</p>
           ) : (
-            <ul className="list-disc pl-5 text-sm text-gray-800 space-y-1">
-              {friends.map((email, idx) => (
-                <li key={idx}>{email}</li>
+            <ul className="space-y-3">
+              {friends.map((friend, idx) => (
+                <li key={idx} className="flex items-center space-x-3">
+                  <div className="w-9 h-9 rounded-full bg-blue-200 flex items-center justify-center font-semibold text-blue-700">
+                    {friend.email.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm text-gray-800">{friend.email}</span>
+                </li>
               ))}
             </ul>
           )}

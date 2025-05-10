@@ -27,6 +27,8 @@ const transactionRoutes = require('./routes/transactionRoutes');
 const receiptRoutes = require('./routes/receiptRoutes');
 const authTestRoutes = require('./routes/authTestRoutes');
 const userRoutes = require('./routes/userRoutes'); // adjust path
+const inviteRoutes = require('./routes/inviteRoutes');
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
@@ -34,6 +36,8 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/test', authTestRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/invite', inviteRoutes);
+
 
 // Optional health check
 app.get('/api/health', (req, res) => {
