@@ -6,18 +6,17 @@ const TransactionSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true },
   splitAmount: Number,
   paidBy: { type: String, required: true },
-  receiptUrl: { type: String},
+  receiptUrl: { type: String },
   splitAmong: [
     {
-      user: { type: String, required: true }, // Firebase UID
+      user: { type: String, required: true },
       amount: { type: Number, required: true },
     }
   ],
   remainingCent: { type: Number, default: 0 },
-  resolved: { type: Boolean, default: false }, // was the extra cent resolved?
-  resolutionType: { type: String, enum: ['donate', 'game', null], default: null }
-  ,
-  extraCentDecision: { type: String, enum: ['donate', 'game'], default: null},
+  resolved: { type: Boolean, default: false },
+  resolutionType: { type: String, enum: ['donate', 'game', null], default: null },
+  extraCentDecision: { type: String, enum: ['donate', 'game'], default: null },
   extraCentWinner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 }, { timestamps: true });
 

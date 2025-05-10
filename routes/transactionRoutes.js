@@ -43,18 +43,17 @@ const DEMO_USER_ID = 'test-user-id';
  *         description: Server error
  */
 router.post('/add', async (req, res) => {
-  const userId = DEMO_USER_ID;
   const {
-  groupId,
-  totalAmount,
-  description,
-  receiptUrl,
-  splitAmong,
-  remainingCent,
-  extraCentDecision,
-  extraCentWinner,
-  paidBy
-} = req.body;
+    groupId,
+    totalAmount,
+    description,
+    receiptUrl,
+    splitAmong,
+    remainingCent,
+    extraCentDecision,
+    extraCentWinner,
+    paidBy
+  } = req.body;
 
 
   if (!groupId || !totalAmount || !description) {
@@ -207,5 +206,44 @@ router.post('/resolve-cent/:transactionId', async (req, res) => {
     res.status(500).json({ message: 'Error resolving cent', error: err.message });
   }
 });
+
+/* Edit route*/
+router.patch('/:id', async (req, res) => {
+  const { id } = req.params;
+  const { description, totalAmount, resolved } = req.body;
+
+  try {
+    const tx = await Transaction.findById(id);
+    if (!tx) return res.status(404).json({ message: 'Transaction not found' });
+
+    if (description !== undefined) tx.description = description;
+    if (totalAmount !== undefined) tx.totalAmount = totalAmount;
+    if (resolved !== undefined) tx.resolved = resolved;
+
+    await tx.save();
+
+    res.status(200).json({ message: 'Transaction updated successfully', transaction: tx });
+  } catch (err) {
+    console.error('Error updating transaction:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+/* Delete route*/
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const tx = await Transaction.findById(id);
+    if (!tx) return res.status(404).json({ message: 'Transaction not found' });
+
+    await tx.deleteOne();
+    res.status(200).json({ message: 'Transaction deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting transaction:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 
 module.exports = router;
