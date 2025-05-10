@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaArrowLeft, FaHome, FaUsers, FaUser, FaUserFriends } from 'react-icons/fa';
+import { FaArrowLeft, FaHome, FaUsers, FaUser, FaUserFriends, FaPlus } from 'react-icons/fa';
 
 const GroupDetailsPage = () => {
-  const { groupId } = useParams();
   const navigate = useNavigate();
+  const { groupId } = useParams();
   const [group, setGroup] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [users, setUsers] = useState([]);
@@ -38,9 +38,8 @@ const GroupDetailsPage = () => {
       }
     };
 
-
     fetchGroupDetails();
-  }, [groupId]);
+  }, [groupId, navigate]);
 
   const getName = (userId) => {
     const user = users.find((u) => u._id === userId);
@@ -59,7 +58,7 @@ const GroupDetailsPage = () => {
         }
       });
       return {
-        amount: totalOwed > 0 ? `+$${totalOwed.toFixed(2)}` : '$0.00',
+        amount: totalOwed > 0 ? `$${totalOwed.toFixed(2)}` : '$0.00',
         color: totalOwed > 0 ? 'text-green-600' : 'text-gray-400',
       };
     }
@@ -94,49 +93,51 @@ const GroupDetailsPage = () => {
       {Array.isArray(users) && users.length > 0 && (
         <div className="mt-3 px-4 pb-2 overflow-x-auto">
           <div className="flex gap-4 w-max">
-            {users.map((user, index) => {
-              const pastelPalette = [
-                '#cce5ff', '#d1d8ff', '#cde0f6',
-                '#d6e4ff', '#ccf0e1', '#f0e8ff', '#d9f0ff'
-              ];
-              const textPalette = [
-                '#2c74b3', '#4e4edb', '#3673ac',
-                '#30506d', '#2b7b66', '#5e3b8c', '#39789d'
-              ];
+            {users
+              .filter((u) => group?.members?.includes(u._id))
+              .map((user, index) => {
+                const pastelPalette = [
+                  '#cce5ff', '#d1d8ff', '#cde0f6',
+                  '#d6e4ff', '#ccf0e1', '#f0e8ff', '#d9f0ff'
+                ];
+                const textPalette = [
+                  '#2c74b3', '#4e4edb', '#3673ac',
+                  '#30506d', '#2b7b66', '#5e3b8c', '#39789d'
+                ];
 
-              const paletteIndex = index % pastelPalette.length;
-              const bgColor = pastelPalette[paletteIndex];
-              const textColor = textPalette[paletteIndex];
+                const paletteIndex = index % pastelPalette.length;
+                const bgColor = pastelPalette[paletteIndex];
+                const textColor = textPalette[paletteIndex];
 
-              const initials =
-                user.name
-                  ?.split(' ')
-                  .map((part) => part[0])
-                  .join('')
-                  .slice(0, 2)
-                  .toUpperCase() || '?';
+                const initials =
+                  user.name
+                    ?.split(' ')
+                    .map((part) => part[0])
+                    .join('')
+                    .slice(0, 2)
+                    .toUpperCase() || '?';
 
-              const displayName =
-                user.name.includes('@') ? user.name.split('@')[0] : user.name;
+                const displayName =
+                  user.name.includes('@') ? user.name.split('@')[0] : user.name;
 
-              return (
-                <div
-                  key={user._id}
-                  className="flex flex-col items-center text-sm"
-                  title={displayName}
-                >
+                return (
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm font-bold"
-                    style={{ backgroundColor: bgColor, color: textColor }}
+                    key={user._id}
+                    className="flex flex-col items-center text-sm"
+                    title={displayName}
                   >
-                    {initials}
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm font-bold"
+                      style={{ backgroundColor: bgColor, color: textColor }}
+                    >
+                      {initials}
+                    </div>
+                    <span className="text-xs mt-1 text-center w-16 truncate">
+                      {displayName}
+                    </span>
                   </div>
-                  <span className="text-xs mt-1 text-center w-16 truncate">
-                    {displayName}
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       )}
@@ -176,6 +177,19 @@ const GroupDetailsPage = () => {
                       <p className="mt-1 text-sm text-gray-500">
                         Total: <span className="font-semibold">${tx.totalAmount.toFixed(2)}</span>
                       </p>
+
+                      {tx.remainingCent > 0 && tx.extraCentDecision && (
+                        <div className={`mt-2 px-3 py-0.5 rounded-full text-xs flex items-center gap-1.5 border ${tx.extraCentDecision === 'donate'
+                          ? 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                          : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
+                          <span className="text-sm">💰</span>
+                          <span>
+                            Extra cent: {tx.extraCentDecision === 'donate'
+                              ? 'Donated to group fund'
+                              : `Paid by ${tx.extraCentWinner?.toString() === currentUserId ? 'you' : getName(tx.extraCentWinner)}`}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className={`text-base font-semibold ${balance.color}`}>
                       {balance.amount}
@@ -187,21 +201,45 @@ const GroupDetailsPage = () => {
         )}
       </main>
 
+      {/* Add Expense Button */}
+      <button
+        onClick={() => navigate(`/groups/${groupId}/add-expense`)}
+        className="fixed bottom-20 right-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg z-50"
+        title="Add Expense"
+      >
+        <FaPlus className="w-5 h-5" />
+      </button>
+
       {/* Footer Navigation */}
-      <footer className="fixed bottom-0 left-0 w-full bg-white border-t shadow-md p-2 flex justify-around">
-        <button onClick={() => navigate('/')} className="flex flex-col items-center text-gray-400 text-xs">
+      <footer
+        className="fixed bottom-0 left-0 w-full bg-white border-t shadow-md p-2 flex justify-around z-40"
+        style={{ backgroundColor: '#fff', borderTop: '2px solid #ccc' }}
+      >
+        <button
+          onClick={() => navigate('/')}
+          className="flex flex-col items-center text-gray-400 text-xs"
+        >
           <FaHome className="w-5 h-5 mb-0.5" />
           Home
         </button>
-        <button onClick={() => navigate('/groups')} className="flex flex-col items-center text-blue-500 text-xs font-semibold">
+        <button
+          onClick={() => navigate('/groups')}
+          className="flex flex-col items-center text-blue-500 text-xs font-semibold"
+        >
           <FaUsers className="w-5 h-5 mb-0.5" />
           Groups
         </button>
-        <button onClick={() => navigate('/friends')} className="flex flex-col items-center text-gray-400 text-xs">
+        <button
+          onClick={() => navigate('/friends')}
+          className="flex flex-col items-center text-gray-400 text-xs"
+        >
           <FaUserFriends className="w-5 h-5 mb-0.5" />
           Friends
         </button>
-        <button onClick={() => navigate('/profile')} className="flex flex-col items-center text-gray-400 text-xs">
+        <button
+          onClick={() => navigate('/profile')}
+          className="flex flex-col items-center text-gray-400 text-xs"
+        >
           <FaUser className="w-5 h-5 mb-0.5" />
           Profile
         </button>

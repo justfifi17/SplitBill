@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import {useNavigate } from 'react-router-dom';
 import {
   FaUsers,
   FaPlane,
@@ -18,6 +19,7 @@ import { Link } from 'react-router-dom';
 
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -199,10 +201,17 @@ const HomePage = () => {
           <FaUserFriends className="w-5 h-5 mb-0.5" />
           Friends
         </button>
-        <button className="flex flex-col items-center text-gray-400 text-xs">
+        <button
+          onClick={() => {
+            console.log('Navigating to profile from HomePage...');
+            navigate('/profile');
+          }}
+          className="flex flex-col items-center text-gray-400 text-xs"
+        >
           <FaUser className="w-5 h-5 mb-0.5" />
           Profile
         </button>
+
       </footer>
     </div>
   );

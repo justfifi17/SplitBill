@@ -44,7 +44,18 @@ const DEMO_USER_ID = 'test-user-id';
  */
 router.post('/add', async (req, res) => {
   const userId = DEMO_USER_ID;
-  const { groupId, totalAmount, description, receiptUrl } = req.body;
+  const {
+  groupId,
+  totalAmount,
+  description,
+  receiptUrl,
+  splitAmong,
+  remainingCent,
+  extraCentDecision,
+  extraCentWinner,
+  paidBy
+} = req.body;
+
 
   if (!groupId || !totalAmount || !description) {
     return res.status(400).json({ message: 'All fields are required' });
@@ -75,15 +86,18 @@ router.post('/add', async (req, res) => {
 
     const transaction = new Transaction({
       groupId,
-      paidBy: userId,
+      paidBy,
       totalAmount,
       description,
       receiptUrl: receiptUrl || '',
       splitAmong,
       remainingCent,
+      extraCentDecision,
+      extraCentWinner,
       resolved: false,
       resolutionType: null,
     });
+
 
     await transaction.save();
 

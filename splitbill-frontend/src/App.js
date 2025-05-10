@@ -1,12 +1,19 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
+
 import './App.css';
 
 import HomePage from './pages/HomePage';
 import GroupDetailsPage from './pages/GroupDetailsPage';
 import LoginPage from './pages/LoginPage';
-import ProfilePage from './pages/ProfilePage'; // Optional if you're adding logout here
+import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
+import AddExpensePage from './pages/AddExpensePage';
 
 function App() {
   return (
@@ -34,6 +41,15 @@ function App() {
             }
           />
           <Route
+            path="/groups/:groupId/add-expense"
+            element={
+              <ProtectedRoute>
+                <AddExpensePage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/profile"
             element={
               <ProtectedRoute>
@@ -41,6 +57,9 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Default fallback to login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </div>
     </Router>

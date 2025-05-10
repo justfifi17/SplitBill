@@ -6,8 +6,9 @@ import {
 } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
-const navigate = useNavigate();
+
 const LoginPage = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
