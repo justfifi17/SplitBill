@@ -127,8 +127,8 @@ const HomePage = () => {
 
         {/* Balance Summary */}
         <section className="bg-blue-700 text-white rounded-xl mt-4 p-4 shadow-md">
+          <div className="text-xs text-white/80 font-medium">Total Balance</div>
           <div className="text-lg font-bold mb-1">${totalBalance.toFixed(2)}</div>
-          <div className="text-xs text-white/80 font-medium mb-3">Total Balance</div>
           <div className="flex justify-between items-start text-sm font-semibold mt-1">
             <div className="text-left">
               <div className="text-xs text-white/70">You owe</div>

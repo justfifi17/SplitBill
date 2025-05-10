@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const EditTransactionModal = ({ isOpen, onClose, transaction, onUpdated }) => {
-  const [description, setDescription] = useState(transaction.description);
-  const [totalAmount, setTotalAmount] = useState(transaction.totalAmount);
-  const [settled, setSettled] = useState(transaction.resolved);
+  const [description, setDescription] = useState(transaction?.description || '');
+  const [totalAmount, setTotalAmount] = useState(transaction?.totalAmount || 0);
+  const [settled, setSettled] = useState(transaction?.resolved || false);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 

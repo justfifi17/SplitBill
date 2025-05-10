@@ -159,14 +159,11 @@ const GroupDetailsPage = () => {
                 const paidByName = tx.paidBy?.toString() === currentUserId ? 'You' : getName(tx.paidBy);
 
                 return (
-                  <div key={tx._id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition">
+                  <div key={tx._id} className="relative bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start hover:shadow-md transition">
                     <div>
                       <h3 className="font-semibold text-base text-gray-800">{tx.description}</h3>
                       <p className="text-sm text-gray-500">
                         Paid by: <span className="text-gray-700 font-medium">{paidByName}</span>
-                      </p>
-                      <p className="mt-1 text-sm text-gray-500">
-                        Total: <span className="font-semibold">${tx.totalAmount.toFixed(2)}</span>
                       </p>
 
                       
@@ -182,10 +179,10 @@ const GroupDetailsPage = () => {
                       )}
 
                       {/* Settle/Delete buttons */}
-                      <div className="mt-3 flex gap-2 text-xs">
+                      <div className="mt-3 flex gap-2 text-xs right-3">
                         <button
-                          onClick={() => setEditingTx(tx)}
-                          className="text-blue-600 border border-blue-600 px-2 py-1 rounded hover:bg-blue-50 text-xs"
+                          onClick={() =>  navigate(`/add-expense/${groupId}?edit=${tx._id}`)}
+                          className="absolute bottom-6 right-4 px-3 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 text-center"
                         >
                           Edit
                         </button>

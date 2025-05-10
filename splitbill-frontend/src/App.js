@@ -49,6 +49,11 @@ function App() {
             }
           />
 
+          <Route 
+            path="/add-expense/:groupId" 
+            element={<AddExpensePage />} />
+
+
           <Route
             path="/profile"
             element={

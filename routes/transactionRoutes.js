@@ -10,6 +10,8 @@ const CharityPool = require('../models/CharityPool');
 
 // Replace with real user ID extraction later
 const DEMO_USER_ID = 'test-user-id';
+const currentUserId = 'ctEaRg3hmOeZZBgpD62ryijwqAz1';
+
 
 /**
  * @swagger
@@ -208,24 +210,34 @@ router.post('/resolve-cent/:transactionId', async (req, res) => {
 });
 
 /* Edit route*/
-router.patch('/:id', async (req, res) => {
-  const { id } = req.params;
-  const { description, totalAmount, resolved } = req.body;
-
+router.put('/:transactionId', async (req, res) => {
   try {
-    const tx = await Transaction.findById(id);
-    if (!tx) return res.status(404).json({ message: 'Transaction not found' });
+    const { transactionId } = req.params;
+    const updatedData = req.body;
 
-    if (description !== undefined) tx.description = description;
-    if (totalAmount !== undefined) tx.totalAmount = totalAmount;
-    if (resolved !== undefined) tx.resolved = resolved;
+    const updatedTransaction = await Transaction.findByIdAndUpdate(
+      transactionId,
+      {
+        title: updatedData.description,
+        totalAmount: updatedData.totalAmount,
+        paidBy: updatedData.paidBy,
+        splitAmong: updatedData.splitAmong,
+        remainingCent: updatedData.remainingCent,
+        extraCentDecision: updatedData.extraCentDecision,
+        extraCentWinner: updatedData.extraCentWinner,
+        receiptUrl: updatedData.receiptUrl || '',
+      },
+      { new: true }
+    );
 
-    await tx.save();
+    if (!updatedTransaction) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
 
-    res.status(200).json({ message: 'Transaction updated successfully', transaction: tx });
+    res.json({ message: 'Transaction updated', transaction: updatedTransaction });
   } catch (err) {
     console.error('Error updating transaction:', err);
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
