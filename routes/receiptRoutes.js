@@ -61,14 +61,24 @@ router.post(
       });
 
       blobStream.on('finish', async () => {
-        await file.makePublic();
-        const publicUrl = file.publicUrl();
+        try {
+          await file.makePublic(); // 👈 makes the file publicly accessible
 
-        res.status(200).json({
-          message: 'Receipt uploaded successfully',
-          receiptUrl: publicUrl,
-        });
+          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
+
+          console.log('✅ Receipt uploaded and made public:', publicUrl);
+
+          res.status(200).json({
+            message: 'Receipt uploaded successfully',
+            receiptUrl: publicUrl,
+          });
+        } catch (err) {
+          console.error('❌ Failed to make file public:', err);
+          res.status(500).json({ message: 'Could not make file public', error: err.message });
+        }
       });
+
+
 
       blobStream.end(req.file.buffer);
     } catch (err) {

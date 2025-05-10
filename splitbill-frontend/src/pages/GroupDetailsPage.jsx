@@ -165,6 +165,17 @@ const GroupDetailsPage = () => {
                       <p className="text-sm text-gray-500">
                         Paid by: <span className="text-gray-700 font-medium">{paidByName}</span>
                       </p>
+                      {tx.receiptUrl && (
+                        <a
+                          href={tx.receiptUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 mt-1 inline-block"
+                        >
+                          🧾 Receipt
+                        </a>
+                      )}
+
 
                       
 
