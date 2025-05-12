@@ -2,85 +2,70 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {
-  FaUsers,
-  FaPlane,
-  FaUtensils,
-  FaShoppingCart,
-  FaBriefcase,
-  FaUserFriends,
-  FaUser,
-  FaHome,
-  FaHeart,
-  FaMusic,
-  FaBook,
-  FaSearch,
-  FaPlus
+  FaUsers, FaPlane, FaUtensils, FaShoppingCart, FaBriefcase, FaUserFriends,
+  FaUser, FaHome, FaHeart, FaMusic, FaBook, FaSearch, FaPlus
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { getAuth } from 'firebase/auth';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [youOwe, setYouOwe] = useState(0);
-  const [youAreOwed, setYouAreOwed] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [selectedMembers, setSelectedMembers] = useState([]);
-  const [friendOptions, setFriendOptions] = useState([]);
+  const [friendOptions, setFriendOptions] = useState([
+    'mine@gmail.com',
+    'test@gmail.com',
+    'mike@splitbill.com',
+    'def@gmail.com',
+    'jessiii@gmail.com',
+    'abc@gmail.com'
+  ]);
+
+  const [userBalance, setUserBalance] = useState({
+    owed: 0,
+    owes: 0,
+    total: 0
+  });
 
   const userId = 'ctEaRg3hmOeZZBgpD62ryijwqAz1';
 
-  const fetchGroupsAndFriends = async () => {
-    try {
-      const res = await axios.get('https://splitbill-api.onrender.com/api/groups/my-groups');
-      const groupsData = res.data || [];
-      setGroups(groupsData);
-
-      let totalOwe = 0;
-      let totalOwed = 0;
-
-      groupsData.forEach(group => {
-        if (Array.isArray(group.transactions)) {
-          group.transactions.forEach(tx => {
-            if (tx.paidBy === userId) {
-              tx.splitAmong.forEach(split => {
-                if (split.user !== userId) {
-                  totalOwed += split.amount;
-                }
-              });
-            } else {
-              const userSplit = tx.splitAmong.find(s => s.user === userId);
-              if (userSplit) {
-                totalOwe += userSplit.amount;
-              }
-            }
-          });
-        }
-      });
-
-      setYouOwe(totalOwe);
-      setYouAreOwed(totalOwed);
-      setFriendOptions([
-        'mine@gmail.com',
-        'test@gmail.com',
-        'mike@splitbill.com',
-        'def@gmail.com',
-        'jessiii@gmail.com',
-        'abc@gmail.com'
-      ]);
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to load groups');
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchGroupsAndFriends();
+    const fetchData = async () => {
+      try {
+        const res = await axios.get('https://splitbill-api.onrender.com/api/groups/my-groups');
+        setGroups(res.data || []);
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load groups');
+        setLoading(false);
+      }
+    };
+
+    const fetchBalance = async () => {
+      try {
+        const auth = getAuth();
+        const token = await auth.currentUser.getIdToken();
+
+        const res = await axios.get('https://splitbill-api.onrender.com/api/transactions/my-balance', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        setUserBalance(res.data);
+      } catch (err) {
+        console.error('Failed to fetch balance', err);
+      }
+    };
+
+    fetchData();
+    fetchBalance();
   }, []);
 
   const filteredGroups = groups.filter(group =>
@@ -109,11 +94,13 @@ const HomePage = () => {
       setShowModal(false);
       setNewGroupName('');
       setSelectedMembers([]);
-      fetchGroupsAndFriends();
+      setGroups([]);
+      setLoading(true);
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     }).catch(err => console.error(err));
   };
-
-  const totalBalance = youAreOwed - youOwe;
 
   return (
     <div className="min-h-screen bg-gray-100 pb-20 flex flex-col">
@@ -135,16 +122,16 @@ const HomePage = () => {
 
         <section className="bg-blue-700 text-white rounded-xl mt-4 p-4 shadow-md">
           <div className="text-xs text-white/80 font-medium">Total Balance</div>
-          <div className="text-lg font-bold mb-1">${totalBalance.toFixed(2)}</div>
+          <div className="text-lg font-bold mb-1">${userBalance.total.toFixed(2)}</div>
           <div className="flex justify-between items-start text-sm font-semibold mt-1">
             <div className="text-left">
               <div className="text-xs text-white/70">You owe</div>
-              <div className="text-lg font-bold text-white">${youOwe.toFixed(2)}</div>
+              <div className="text-lg font-bold text-white">${userBalance.owes.toFixed(2)}</div>
             </div>
             <div className="h-8 border-r border-white/40 mx-4"></div>
             <div className="text-right">
               <div className="text-xs text-white/70">You are owed</div>
-              <div className="text-lg font-bold text-white">${youAreOwed.toFixed(2)}</div>
+              <div className="text-lg font-bold text-white">${userBalance.owed.toFixed(2)}</div>
             </div>
           </div>
         </section>
@@ -168,40 +155,6 @@ const HomePage = () => {
         )}
 
         <div className="space-y-4 pb-24">
-
-          {/* Hardcoded Test Group Card */}
-          <div className="bg-white p-4 rounded-xl shadow flex flex-col gap-2">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <FaUsers className="text-blue-600" />
-                <div className="flex flex-col">
-                  <h2 className="text-base font-semibold">{newGroupName || 'New Test Group'}</h2>
-                  <p className="text-xs text-gray-400">{selectedMembers.length} members</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <button
-                  onClick={() => alert('Group Members: ' + selectedMembers.join(', '))}
-                  className="text-xs px-2 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
-                >
-                  View Details
-                </button>
-              </div>
-            </div>
-            {selectedMembers.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {selectedMembers.map((email) => (
-                  <div
-                    key={email}
-                    className="bg-blue-100 text-blue-700 rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1"
-                  >
-                    <FaUser className="text-sm" /> {email}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
           {filteredGroups.map((group) => (
             <div
               key={group._id}

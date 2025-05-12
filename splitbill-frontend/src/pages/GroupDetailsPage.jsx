@@ -172,11 +172,11 @@ const GroupDetailsPage = () => {
                         <div className="mt-2">
                           <a
                             href={tx.receiptUrl}
-                            target="_blank"
+                            target="file:///C:/Users/fghebrea408_student/Desktop/SplitBill/images.jpg"
                             rel="noopener noreferrer"
-                            className="text-sm text-blue-600 underline flex items-center gap-1"
+                            className="text-sm text-blue-600  flex items-center gap-1"
                           >
-                            <span className="text-base">📎</span> View Receipt
+                            <span className="text-base" >📎</span> Receipt
                           </a>
                         </div>
                       ) : (
