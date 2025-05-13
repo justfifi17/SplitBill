@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import {
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  onAuthStateChanged
 } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -14,22 +14,32 @@ const LoginPage = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState('');
 
+  // ✅ Only handle auth here — don't redirect yet
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
-        if (isRegistering) {
+      if (isRegistering) {
         await createUserWithEmailAndPassword(auth, email, password);
-        } else {
+      } else {
         await signInWithEmailAndPassword(auth, email, password);
-        
-        }
-    
+      }
     } catch (err) {
-        setError(err.message);
+      setError(err.message);
     }
   };
-  
+
+  // ✅ Listen for when the user becomes authenticated
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log('✅ User is logged in. Navigating to homepage...');
+        navigate('/');
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <form
