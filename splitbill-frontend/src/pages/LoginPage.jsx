@@ -22,14 +22,14 @@ const LoginPage = () => {
         await createUserWithEmailAndPassword(auth, email, password);
         } else {
         await signInWithEmailAndPassword(auth, email, password);
+        
         }
-        navigate('/'); // ✅ Redirect to homepage
+    
     } catch (err) {
         setError(err.message);
     }
   };
-
-
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <form
