@@ -34,6 +34,12 @@ function App() {
           <Route
             path="/"
             element={
+              <Navigate to="/login" replace />
+            }
+          />
+          <Route
+            path="/home"
+            element={
               <ProtectedRoute>
                 <HomePage />
               </ProtectedRoute>
