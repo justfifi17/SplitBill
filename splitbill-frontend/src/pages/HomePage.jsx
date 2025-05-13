@@ -32,40 +32,45 @@ const HomePage = () => {
     total: 0
   });
 
-  const userId = 'ctEaRg3hmOeZZBgpD62ryijwqAz1';
+  const fetchData = async () => {
+    try {
+      const res = await axios.get('https://splitbill-api.onrender.com/api/groups/my-groups');
+      setGroups(res.data || []);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load groups');
+      setLoading(false);
+    }
+  };
+
+  const fetchBalance = async (user) => {
+    try {
+      const token = await user.getIdToken();
+      const res = await axios.get('https://splitbill-api.onrender.com/api/transactions/my-balance', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log('✅ Balance fetched:', res.data);
+      setUserBalance(res.data);
+    } catch (err) {
+      console.error('❌ Failed to fetch balance', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get('https://splitbill-api.onrender.com/api/groups/my-groups');
-        setGroups(res.data || []);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to load groups');
-        setLoading(false);
+    const auth = getAuth();
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log('🔐 User authenticated:', user.email);
+        fetchData();
+        fetchBalance(user);
+      } else {
+        console.warn('🚫 No user found, redirecting to login');
       }
-    };
-
-    const fetchBalance = async () => {
-      try {
-        const auth = getAuth();
-        const token = await auth.currentUser.getIdToken();
-
-        const res = await axios.get('https://splitbill-api.onrender.com/api/transactions/my-balance', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        setUserBalance(res.data);
-      } catch (err) {
-        console.error('Failed to fetch balance', err);
-      }
-    };
-
-    fetchData();
-    fetchBalance();
+    });
+    return unsubscribe;
   }, []);
 
   const filteredGroups = groups.filter(group =>
@@ -86,7 +91,11 @@ const HomePage = () => {
 
   const handleCreateGroup = () => {
     if (!newGroupName || selectedMembers.length === 0) return;
-    const members = [userId, ...selectedMembers];
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const members = [user.uid, ...selectedMembers];
     axios.post('https://splitbill-api.onrender.com/api/groups/create', {
       groupName: newGroupName,
       members

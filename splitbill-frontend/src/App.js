@@ -17,6 +17,10 @@ import AddExpensePage from './pages/AddExpensePage';
 import FriendsPage from './pages/FriendsPage';
 
 function App() {
+  const [user, loading] = useAuthState(auth);
+
+  if (loading) return <div className="text-center mt-10">Loading...</div>;
+  
   return (
     <Router>
       <div className="bg-gray-50 min-h-screen">
@@ -74,8 +78,6 @@ function App() {
             }
           />
 
-          {/* Default fallback to login */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </div>
     </Router>
