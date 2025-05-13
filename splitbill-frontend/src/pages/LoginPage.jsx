@@ -34,7 +34,7 @@ const LoginPage = () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         console.log('✅ User is logged in. Navigating to homepage...');
-        navigate('/');
+        navigate('/', { replace: true });
       }
     });
     return () => unsubscribe();
