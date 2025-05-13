@@ -5,6 +5,8 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from './firebase';
 
 import './App.css';
 
@@ -20,7 +22,7 @@ function App() {
   const [user, loading] = useAuthState(auth);
 
   if (loading) return <div className="text-center mt-10">Loading...</div>;
-  
+
   return (
     <Router>
       <div className="bg-gray-50 min-h-screen">
